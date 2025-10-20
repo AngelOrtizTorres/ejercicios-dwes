@@ -8,14 +8,25 @@ include 'lib/function.php';
 session_start();
 
 if (!isset($_SESSION['tareas'])) {
-    $_SESSION['tareas'] = [];
+    $_SESSION['tareas'] = array();
 }
 
-$fecha = date('d-n-Y');
+if (isset($_POST['nueva'])) {
+    if (empty($_POST['tarea'])) {
+        $msgErrorTarea = "<span>La tarea no puede estar vacía</span>";
+    } else {
+        $_SESSION['tareas'][] = array('fecha' => clearData($_POST['fecha']),
+                                    'tarea' => clearData($_POST['tarea']));
+    }
+
+}
+
+$fecha = isset($_GET['fecha']) ? $_GET['fecha'] : date('d-m-Y');
 $msgErrorTarea = "";
 // Declaración de variables
 $mes = $_POST['mes'] ?? date('n');
 $año = $_POST['anio'] ?? date('Y');
+$tareas = [];
 
 if (!$mes || !$año) {
     echo "Debes enviar un mes y un año válidos desde el formulario.";
@@ -54,7 +65,7 @@ $numDiasMes = cal_days_in_month(CAL_GREGORIAN, $mes, $año);
 $primerDiaSemana = date("w", mktime(0, 0, 0, $mes, 1 ,$año));
 $numHuecos = ($primerDiaSemana + 6) % 7;
 
-$tareasDia = $_SESSION['tareas'];
+$tareas = $_SESSION['tareas'];
 ?>
 
 <!--Vista-->
@@ -120,7 +131,7 @@ $tareasDia = $_SESSION['tareas'];
 
             $diaSemana = $numHuecos; // Empieza a poner los números después de añadir los huecos
             for ($dia = 1; $dia <= $numDiasMes; $dia++) {
-                $fecha = "$dia-$mes-$año";
+                $strfecha = "$dia-$mes-$año";
                 if (in_array($dia, $festivos)) {
                     $clase = 'fest';
                 } elseif (in_array($dia, $festivosLocal)) {
@@ -132,7 +143,7 @@ $tareasDia = $_SESSION['tareas'];
                 }
 
                 echo '<td' . ($clase ? ' class="'.$clase.'"' : '') . '>
-                            <a href="calendar.php?fecha='.$fecha.'" class="dias_boton">
+                            <a href="calendar.php?fecha='.$strfecha.'" class="dias_boton">
                                 '.$dia.'
                             </a>
                     </td>';
@@ -161,7 +172,7 @@ $tareasDia = $_SESSION['tareas'];
 
     <?php
         echo '<h2><a href="save.php">Tareas:</a></h2>';
-        echo "Fecha: $fecha<br>";
+        echo "Fecha: $fecha <br>";
         echo '<form action="' . htmlspecialchars($_SERVER["PHP_SELF"]) . '?fecha=' . $fecha . '" method="POST">';
         echo '<input type="text" name="tarea" value="">';
         echo $msgErrorTarea;
@@ -172,7 +183,7 @@ $tareasDia = $_SESSION['tareas'];
 
         foreach ($tareas as $clave => $valor) {
             if ($valor["fecha"] == $fecha) {
-                echo $valor["tarea"] . ' <a href="' . htmlspecialchars($_SERVER["PHP_SELF"]) . '?borrar=' . $clave . '&fecha=' . $fecha . '">Borrar</a><br>';
+                echo $valor["tarea"] . ' <a href="del.php?id=' . $clave . '">🗑️</a><br>';
             }
         }
     ?>
