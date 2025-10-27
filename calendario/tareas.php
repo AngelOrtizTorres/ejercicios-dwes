@@ -19,25 +19,16 @@ $mes  = $_GET['mes'];
 $año  = $_GET['anio'];
 $procesaFormulario = false;
 
-if (isset($_POST['nuevaTarea']) && $dia && $mes && $año) {
-    $procesaFormulario = true;
-    $tarea = clearData($_POST['nuevaTarea']);
-
-    if ($tarea === '') {
-        $procesaFormulario = false;
+if (isset($_POST['nueva'])) {
+    if (empty($_POST['tarea'])) {
+        $msgErrorTarea = "<span>La tarea no puede estar vacía</span>";
+    } else {
+        $_SESSION['tareas'][] = array('fecha' => clearData($_POST['fecha']),
+                                    'tarea' => clearData($_POST['tarea']));
     }
 
-    if ($procesaFormulario) {
-        // Añadir tarea al array de tareas del día
-        $fecha = $año . '-' . str_pad($mes, 2, '0', STR_PAD_LEFT) . '-' . str_pad($dia, 2, '0', STR_PAD_LEFT);
-        $tareasDia[$fecha][] = $_POST['nuevaTarea'];
-    }
-
-    // Actualizar el array de tareas para mostrarlas inmediatamente
-    $tareasDia = $_SESSION['tareas'];
 }
-
-
+// Actualizar el array de tareas para mostrarlas inmediatamente
 $tareasDia = $_SESSION['tareas'];
 ?>
 
