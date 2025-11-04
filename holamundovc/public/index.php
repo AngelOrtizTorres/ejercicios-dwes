@@ -21,11 +21,11 @@ $router->add(array(
 ));
 
 // Ruta dinámica "/saludo/{nombre}"
-$router->add(array(
-    'name' => 'saludo',
-    'path' => '/^\/saludo\/([a-zA-Z0-9_-]+)$/',
-    'action' => [IndexController::class, 'SaludoAction']
-));
+    $router->add(array(
+        'name' => 'saludo',
+        'path' => '/^\/saludo\/([a-zA-Z0-9_-]+)$/',
+        'action' => [IndexController::class, 'SaludoAction']
+    ));
 
 // Obtenemos la ruta de la petición
 $request = str_replace(DIRBASEURL, '', $_SERVER['REQUEST_URI']);
