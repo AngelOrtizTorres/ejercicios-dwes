@@ -8,7 +8,12 @@ include 'lib/function.php';
 session_start();
 
 if (!isset($_SESSION['tareas'])) {
-    $_SESSION['tareas'] = array();
+    $file = "data/tareas.txt";
+    if (file_exists($file)) {
+        $_SESSION['tareas'] = json_decode(file_get_contents($file), true);
+    } else {
+        $_SESSION['tareas'] = array();
+    }
 }
 
 if (isset($_POST['nueva'])) {
@@ -23,14 +28,20 @@ if (isset($_POST['nueva'])) {
 
 $fecha = isset($_GET['fecha']) ? $_GET['fecha'] : date('d-m-Y');
 $msgErrorTarea = "";
-// Declaración de variables
-$mes = $_POST['mes'] ?? date('n');
-$año = $_POST['anio'] ?? date('Y');
-$tareas = [];
 
-if (!$mes || !$año) {
-    echo "Debes enviar un mes y un año válidos desde el formulario.";
+// Declaración de variables
+// Si llega una fecha por GET, extraemos día, mes y año de ahí
+if (isset($_GET['fecha'])) {
+    list($diaSel, $mesSel, $añoSel) = explode('-', $_GET['fecha']);
+    $mes = (int)$mesSel;
+    $año = (int)$añoSel;
+} else {
+    
+    // Si no, usamos lo del formulario o el mes actual
+    $mes = $_POST['mes'] ?? date('n');
+    $año = $_POST['anio'] ?? date('Y');
 }
+$tareas = [];
 
 // Definimos los festivos nacionales y locales en arrays asociativos
 $festivosPorMes = [
@@ -92,6 +103,9 @@ $tareas = $_SESSION['tareas'];
             text-decoration: none;
             color: inherit; /* hereda el color del <td> */
         }
+        a {
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -102,13 +116,10 @@ $tareas = $_SESSION['tareas'];
         <label for="">Año:</label>
         <input type="number" name="anio" id="anio" min="1900" max="2100" value="<?php echo $año?>" required><br><br>
         <input type="submit" value="Enviar">
-    </form><br><br>
+    </form><br>
     <?php
         echo "<h2>Mes: $mes, Año: $año</h2>";
-    ?>
-    <form method="post" action="">
-        <button type="submit" name="grabarTareas">Grabar tareas</button>
-    </form><br>
+    ?><br>
 
     <table border="1">
         <tr>
@@ -126,8 +137,6 @@ $tareas = $_SESSION['tareas'];
             for ($i = 0; $i < $numHuecos; $i++) {
                 echo "<td></td>";
             }
-
-            include 'config/form.php';
 
             $diaSemana = $numHuecos; // Empieza a poner los números después de añadir los huecos
             for ($dia = 1; $dia <= $numDiasMes; $dia++) {
@@ -171,7 +180,7 @@ $tareas = $_SESSION['tareas'];
     </table>
 
     <?php
-        echo '<h2><a href="save.php">Tareas:</a></h2>';
+        echo '<h2><a href="save.php">💾</a>Tareas:</h2>';
         echo "Fecha: $fecha <br>";
         echo '<form action="' . htmlspecialchars($_SERVER["PHP_SELF"]) . '?fecha=' . $fecha . '" method="POST">';
         echo '<input type="text" name="tarea" value="">';
